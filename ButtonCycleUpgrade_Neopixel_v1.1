@@ -1,0 +1,561 @@
+/* 
+
+Neopixel LED Pattern changer with Arduino uno and a single Push Button
+
+The connections are as follows 
+Button's 1st Pin = Digital pin 2 
+Button's 2nd Pin = GND
+Neopixel Data Pin = Digital Pin 5
+Neopixel GND = GND
+
+Seperate 5V power supply provided to Neopixel LED 
+**It work by just power from Arduino Uno, at least mine works with 300 Leds so for testing on estrip is enough
+for more strips You'll need external 5V power Supply
+
+Single button is clicked multiple time sto change pattern, the code is written in a way where 
+the current running pattern is interrupted to change it into new pattern. There are in all 34 Pattern 
+
+Updated by Sankarshan B
+aka Robot Shanks
+17/6/2019
+Created bqased on examples of Adafruit Neopixel libraries and example button cycle program
+
+For any query email :sankarshansb@gmail.com
+
+*/
+
+ 
+#include <Adafruit_NeoPixel.h>
+
+// change these values to match your board.
+#define BUTTON_LEAD 2
+#define LED_LEAD 5
+#define NUMBER_OF_PIXELS 75
+#define NUMBER_OF_MODES 33
+#define NUM_LEDS 60
+
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUMBER_OF_PIXELS, LED_LEAD, NEO_GRB + NEO_KHZ800);
+
+bool buttonState = LOW;
+bool lastButtonState = LOW;
+
+
+const int PIXEL_FLASH_INTERVAL = 45;
+
+unsigned long previousMillis = millis();
+
+int mode = 1; // Default mode is one.
+
+byte colors[3][3] = { {0xff, 0,0xff}, //red? maybe purple?
+                        {0, 0xff, 0}, //white? set to green
+                        {0   , 0   , 0xff} }; //blue?
+
+void setup() {
+  pinMode(BUTTON_LEAD, INPUT_PULLUP);
+  strip.begin();
+  strip.show();
+  Serial.begin(9600);
+}
+
+int pos = 0, dir = 1; // Position, direction of "eye"
+
+void loop() {
+  
+  
+  switch (mode) {
+    case 1:
+      rainbow();
+      Serial.println("Pattern 1");
+      break;
+
+    case 2:
+    BouncingColoredBalls(45, colors);
+    Serial.println("Pattern 2");
+      //colorWipe(strip.Color(0, 255, 0));
+      break;
+      
+    case 3:
+    colorWipe(strip.Color(250, 155, 10));
+    Serial.println("Pattern 3");
+    break;
+
+    case 4:
+    colorWipe(strip.Color(0, 255, 0));
+    Serial.println("Pattern 4");
+      break;
+      
+    case 5:
+      colorWipe(strip.Color(255, 0, 0));
+      Serial.println("Pattern 5");
+      break;
+
+       case 6:
+      colorWipe(strip.Color(0, 0, 255));
+      Serial.println("Pattern 6");
+      break;
+
+       case 7:
+      colorWipe(strip.Color(100, 255, 0));
+      Serial.println("Pattern 7");
+      break;
+
+       case 8:
+     colorWipe(strip.Color(150, 10, 50));
+     Serial.println("Pattern 8");
+      break;
+
+      case 9:
+      scanner();
+      Serial.println("Pattern 9");
+      break;
+
+
+      case 10:
+      pulseWhite(20);
+      Serial.println("Pattern 10");
+      break;
+      
+      case 11:
+      rainbowFade2White(3, 3, 1);
+      Serial.println("Pattern 11");
+      break;
+
+       case 12:
+       theaterChase(strip.Color(  127, 127, 127), 50); // Blue
+       Serial.println("Pattern 12");
+       break;
+
+      case 13:
+       theaterChase(strip.Color(  127,   0, 0), 50); // Blue
+       Serial.println("Pattern 13");
+       break;
+
+       case 14:
+       theaterChase(strip.Color(  0,   127, 0), 50); // Blue
+       Serial.println("Pattern 14");
+       break;
+
+       case 15:
+       theaterChase(strip.Color(  0,   0, 127), 50); // Blue
+       Serial.println("Pattern 15");
+       break;
+
+       case 16:
+       theaterChase(strip.Color(  100,   50, 10), 50); // Blue
+       Serial.println("Pattern 16");
+       break;
+
+       case 17:
+       theaterChase(strip.Color(  10,   100, 150), 50); // Blue
+       Serial.println("Pattern 17");
+       break;
+
+       case 18:
+       theaterChase(strip.Color(  250, 50, 127), 50); // Blue
+       Serial.println("Pattern 18");
+       break;
+
+        case 19:
+       theaterChase(strip.Color(  250, 0, 250), 50); // Blue
+       Serial.println("Pattern 19");
+       break;
+
+       case 20:
+       theaterChase(strip.Color(  250, 250, 0), 50); // Blue
+       Serial.println("Pattern 20");
+       break;
+
+       case 21:
+       theaterChase(strip.Color(  0, 250, 250), 50); // Blue
+       Serial.println("Pattern 21");
+       break;
+
+       case 22:
+       twinkle(strip.Color(0, 0, 255), strip.Color(255, 0, 255), 50);
+       Serial.println("Pattern 22");
+       break;
+
+       case 23:
+       twinkle(strip.Color(255, 0, 0), strip.Color(255, 255, 0), 50);
+       Serial.println("Pattern 23");
+       break;
+
+       case 24:
+       twinkle(strip.Color(0, 255, 0), strip.Color(255, 255, 0), 50);
+       Serial.println("Pattern 24");
+       break;
+
+       case 25:
+       twinkle(strip.Color(255, 0, 255), strip.Color(0, 255, 255), 50);
+       Serial.println("Pattern 25");
+       break;
+
+       case 26:
+       twinkle(strip.Color(255, 255, 0), strip.Color(255, 0, 0), 50);
+       Serial.println("Pattern 26");
+       break;
+       
+       case 27:
+       twinkle(strip.Color(0, 255, 255), strip.Color(255, 0, 0), 50);
+       Serial.println("Pattern 27");
+       break;
+
+       case 28:
+       Strobe(255,0,0,300,50,0);
+       Serial.println("Pattern 28");
+       break;
+
+       case 29:
+       Strobe(0,255,0,300,50,0);
+       Serial.println("Pattern 29");
+       break;
+
+       case 30:
+       Strobe(0,0,255,100,50,0);
+       Serial.println("Pattern 30");
+       break;
+
+       case 31:
+       Strobe(255,0,255,100,50,0);
+       Serial.println("Pattern 31");
+       break;
+
+       case 32:
+       Strobe(255,255,0,100,50,0);
+       Serial.println("Pattern 32");
+       break;
+
+       case 33:
+       Strobe(0,255,255,100,50,0);
+       Serial.println("Pattern 33");
+       break;
+
+       
+    default:
+      mode = 1;
+      break;
+  }
+}
+
+
+void Strobe(byte red, byte green, byte blue, int StrobeCount, int FlashDelay, int EndPause){
+  for(int j = 0; j < StrobeCount; j++) {
+    setAll(red,green,blue);
+    strip.show();
+    delay(FlashDelay);
+    setAll(0,0,0);
+    strip.show();
+    delay(FlashDelay);
+    if (buttonListener()) {
+      break;
+  }
+ 
+ delay(EndPause);
+}
+}
+
+void colorWipe(uint32_t color) {
+  uint32_t i = 0;
+  while (i < strip.numPixels()) {
+    if (millis() - previousMillis >= PIXEL_FLASH_INTERVAL) {
+      previousMillis = millis();
+      i++;
+    }
+    strip.setPixelColor(i, color);
+    strip.show();
+    if (buttonListener()) {
+      break;
+    }
+  }
+}
+
+
+void rainbowFade2White(int wait, int rainbowLoops, int whiteLoops) {
+  int fadeVal=0, fadeMax=100;
+
+  // Hue of first pixel runs 'rainbowLoops' complete loops through the color
+  // wheel. Color wheel has a range of 65536 but it's OK if we roll over, so
+  // just count from 0 to rainbowLoops*65536, using steps of 256 so we
+  // advance around the wheel at a decent clip.
+  for(uint32_t firstPixelHue = 0; firstPixelHue < rainbowLoops*65536;
+    firstPixelHue += 256) {
+
+    for(int i=0; i<strip.numPixels(); i++) { // For each pixel in strip...
+
+      // Offset pixel hue by an amount to make one full revolution of the
+      // color wheel (range of 65536) along the length of the strip
+      // (strip.numPixels() steps):
+      uint32_t pixelHue = firstPixelHue + (i * 65536L / strip.numPixels());
+
+      // strip.ColorHSV() can take 1 or 3 arguments: a hue (0 to 65535) or
+      // optionally add saturation and value (brightness) (each 0 to 255).
+      // Here we're using just the three-argument variant, though the
+      // second value (saturation) is a constant 255.
+      strip.setPixelColor(i, strip.gamma32(strip.ColorHSV(pixelHue, 255,
+        255 * fadeVal / fadeMax)));
+    }
+
+    strip.show();
+    delay(wait);
+    if(buttonListener()) { return; }
+
+    if(firstPixelHue < 65536) {                              // First loop,
+      if(fadeVal < fadeMax) fadeVal++;                       // fade in
+    } else if(firstPixelHue >= ((rainbowLoops-1) * 65536)) { // Last loop,
+      if(fadeVal > 0) fadeVal--;                             // fade out
+    } else {
+      fadeVal = fadeMax; // Interim loop, make sure fade is at max
+    }
+  }
+
+  for(int k=0; k<whiteLoops; k++) {
+    for(int j=0; j<256; j++) { // Ramp up 0 to 255
+      // Fill entire strip with white at gamma-corrected brightness level 'j':
+      strip.fill(strip.Color(0, 0, 0, strip.gamma8(j)));
+      strip.show();
+       
+    }
+    delay(1000); // Pause 1 second
+    for(int j=255; j>=0; j--) { // Ramp down 255 to 0
+      strip.fill(strip.Color(0, 0, 0, strip.gamma8(j)));
+      strip.show();
+      
+    }
+  }
+ 
+  delay(500); // Pause 1/2 second
+}
+
+#define MAX_TWINKLE 5
+
+void twinkle(uint32_t c1, uint32_t c2, uint8_t wait) {
+  int16_t tw[MAX_TWINKLE];
+
+  for(uint16_t i=0; i<strip.numPixels(); i++) {
+    strip.setPixelColor(i, c1);
+  }
+  strip.show();
+
+  for (uint8_t i = 0; i < MAX_TWINKLE; i++) {
+    tw[i] = -1;
+  }
+
+  for ( ; ; ) {
+    for (uint8_t i = 0; i < MAX_TWINKLE; i++) {
+      if (tw[i] >= 0)
+        strip.setPixelColor(tw[i], c1);
+      tw[i] = random(strip.numPixels());
+      strip.setPixelColor(tw[i], c2);
+      strip.show();
+      delay(wait);
+ if(buttonListener()) { return; }
+    }
+  }
+}
+
+
+
+void pulseWhite(uint8_t wait) {
+  for(int j=0; j<256; j++) { // Ramp up from 0 to 255
+    // Fill entire strip with white at gamma-corrected brightness level 'j':
+    strip.fill(strip.Color(0, 0, 0, strip.gamma8(j)));
+    strip.show();
+     if(buttonListener()) { return; }
+    delay(wait);
+  }
+
+  for(int j=255; j>=0; j--) { // Ramp down from 255 to 0
+    strip.fill(strip.Color(0, 0, 0, strip.gamma8(j)));
+    strip.show();
+    delay(wait);
+
+  }
+}
+
+
+void theaterChase(uint32_t color, int wait) {
+  for(int a=0; a<100; a++) {  // Repeat 10 times...
+    for(int b=0; b<3; b++) { //  'b' counts from 0 to 2...
+      strip.clear();         //   Set all pixels in RAM to 0 (off)
+      // 'c' counts up from 'b' to end of strip in steps of 3...
+      for(int c=b; c<strip.numPixels(); c += 3) {
+        strip.setPixelColor(c, color); // Set pixel 'c' to value 'color'
+      }
+      strip.show(); // Update strip with new contents
+      delay(wait);  // Pause for a moment
+      if(buttonListener()) { return; }
+    }
+  }
+}
+
+/* rainbow function */
+void rainbow() {
+  uint16_t j = 0;
+  while(j<256*3) {
+    if(millis() - previousMillis >= PIXEL_FLASH_INTERVAL) {
+      previousMillis = millis();
+      
+      uint16_t i = 0; 
+      while(i < strip.numPixels()) {
+        strip.setPixelColor(i, Wheel(((i * 256 / strip.numPixels()) + j) & 255));
+        i++;
+        if(buttonListener()) { return; }
+        }
+      strip.show();
+      j++;
+    }
+    
+  }
+}
+
+/* Wheel function */
+uint32_t Wheel(byte WheelPos) {
+  WheelPos = 255 - WheelPos;
+  if(WheelPos < 85) {
+    return strip.Color(255 - WheelPos * 3, 0, WheelPos * 3);
+  }
+  if(WheelPos < 170) {
+    WheelPos -= 85;
+    return strip.Color(0, WheelPos * 3, 255 - WheelPos * 3);
+  }
+  WheelPos -= 170;
+  return strip.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
+}
+
+/* monitor button press */
+bool buttonListener() {
+  bool modeChanged = false;
+
+  buttonState = digitalRead(BUTTON_LEAD);
+
+  if (buttonState != lastButtonState) {
+    if (buttonState == LOW) {
+      mode++;
+      modeChanged = true;
+      delay(250);             // Debounce delay. I checked the best parameter and 250 was it.
+    }
+  }
+  lastButtonState = buttonState;
+
+  return modeChanged;
+}
+
+void scanner() {
+  if (millis() - previousMillis >= PIXEL_FLASH_INTERVAL) {
+      previousMillis = millis();
+
+    if(buttonListener()) { return; }
+      
+  int j;
+
+  // Draw 5 pixels centered on pos.  setPixelColor() will clip any
+  // pixels off the ends of the strip, we don't need to watch for that.
+  strip.setPixelColor(pos - 2, 0x100010); // Dark red
+  strip.setPixelColor(pos - 1, 0x800080); // Medium red
+  strip.setPixelColor(pos    , 0xff00ff); // Center pixel is brightest
+  strip.setPixelColor(pos + 1, 0x800080); // Medium red
+  strip.setPixelColor(pos + 2, 0x100010); // Dark red
+
+  strip.show();
+  //delay(60);
+
+  
+
+
+  // Rather than being sneaky and erasing just the tail pixel,
+  // it's easier to erase it all and draw a new one next time.
+  for(j=-2; j<= 2; j++) strip.setPixelColor(pos+j, 0);
+
+  // Bounce off ends of strip
+  pos += dir;
+  if(pos < 0) {
+    pos = 1;
+    dir = -dir;
+  } else if(pos >= strip.numPixels()) {
+    pos = strip.numPixels() - 2;
+    dir = -dir;
+  }
+}
+}
+
+
+void BouncingColoredBalls(int BallCount, byte colors[10][3]) {
+  float Gravity = -9.81;
+  int StartHeight = 1;
+  
+  float Height[BallCount];
+  float ImpactVelocityStart = sqrt( -2 * Gravity * StartHeight );
+  float ImpactVelocity[BallCount];
+  float TimeSinceLastBounce[BallCount];
+  int   Position[BallCount];
+  long  ClockTimeSinceLastBounce[BallCount];
+  float Dampening[BallCount];
+  
+  for (int i = 0 ; i < BallCount ; i++) {   
+    ClockTimeSinceLastBounce[i] = millis();
+    Height[i] = StartHeight;
+    Position[i] = 0; 
+    ImpactVelocity[i] = ImpactVelocityStart;
+    TimeSinceLastBounce[i] = 0;
+    Dampening[i] = 0.90 - float(i)/pow(BallCount,2); 
+  }
+
+  while (true) {
+    for (int i = 0 ; i < BallCount ; i++) {
+      TimeSinceLastBounce[i] =  millis() - ClockTimeSinceLastBounce[i];
+      Height[i] = 0.5 * Gravity * pow( TimeSinceLastBounce[i]/1000 , 2.0 ) + ImpactVelocity[i] * TimeSinceLastBounce[i]/1000;
+  
+      if ( Height[i] < 0 ) {                      
+        Height[i] = 0;
+        ImpactVelocity[i] = Dampening[i] * ImpactVelocity[i];
+        ClockTimeSinceLastBounce[i] = millis();
+  
+        if ( ImpactVelocity[i] < 0.01 ) {
+          ImpactVelocity[i] = ImpactVelocityStart;
+        }
+      }
+      Position[i] = round( Height[i] * (NUM_LEDS - 1) / StartHeight);
+    }
+  
+    for (int i = 0 ; i < BallCount ; i++) {
+      setPixel(Position[i],colors[i][0],colors[i][1],colors[i][2]);
+    }
+
+    if(buttonListener()) { return; }
+
+    showStrip();
+    setAll(0,0,0);
+  }
+}
+
+
+void showStrip() {
+ #ifdef ADAFRUIT_NEOPIXEL_H 
+   // NeoPixel
+   strip.show();
+ #endif
+ #ifndef ADAFRUIT_NEOPIXEL_H
+   // FastLED
+   FastLED.show();
+ #endif
+}
+
+void setPixel(int Pixel, byte red, byte green, byte blue) {
+ #ifdef ADAFRUIT_NEOPIXEL_H 
+   // NeoPixel
+   strip.setPixelColor(Pixel, strip.Color(red, green, blue));
+ #endif
+ #ifndef ADAFRUIT_NEOPIXEL_H 
+   // FastLED
+   leds[Pixel].r = red;
+   leds[Pixel].g = green;
+   leds[Pixel].b = blue;
+ #endif
+}
+
+void setAll(byte red, byte green, byte blue) {
+  for(int i = 0; i < NUM_LEDS; i++ ) {
+    setPixel(i, red, green, blue); 
+  }
+  showStrip();
+}
